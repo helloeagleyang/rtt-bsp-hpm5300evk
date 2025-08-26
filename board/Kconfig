@@ -454,6 +454,7 @@ menu "On-chip Peripheral Drivers"
        if BSP_USING_USB
             config BSP_USING_USB_DEVICE
                 bool "Enable USB Device"
+                select RT_USING_CACHE
                 default n
             config BSP_USING_USB_HOST
                 bool "Enable USB HOST"
@@ -532,9 +533,6 @@ menu "On-chip Peripheral Drivers"
                 config BSP_USING_ADC1
                     bool "Enable ADC1"
                     default n
-                config BSP_USING_ADC2
-                    bool "Enable ADC2"
-                    default n
             endif
         endif
 endmenu
@@ -567,7 +565,7 @@ endmenu
 
 menu "HPMicro Interrupt Config"
     config HPM_USING_VECTOR_PREEMPTED_MODE
-        bool "Enable Vector and Preempted Mode"
+        bool "Enable Vector and Preempted Mode(experimental)"
         default n
 endmenu
 
