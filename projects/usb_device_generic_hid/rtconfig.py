@@ -4,12 +4,17 @@
 import os
 import sys
 
+from hpm_toolchain_helper import get_compiler_info
+from hpm_toolchain_helper import find_gcc_and_extract_triplet
+
 # toolchains options
 ARCH='risc-v'
 CPU='hpmicro'
 
 SOC_FAMILY='HPM5300'
 CHIP_NAME='HPM5361'
+
+SOC_SUPPORT_B_EXTENSION=True
 
 CROSS_TOOL='gcc'
 
@@ -93,7 +98,11 @@ else:
     BUILD = 'flash_debug'
 
 if PLATFORM == 'gcc':
-    PREFIX = 'riscv32-unknown-elf-'
+    triplet = find_gcc_and_extract_triplet(EXEC_PATH)
+    if triplet['triplet']:
+        PREFIX = triplet['triplet'] + '-'
+    else:
+        PREFIX = 'riscv32-unknown-elf-'
     CC = PREFIX + 'gcc'
     CXX = PREFIX + 'g++'
     AS = PREFIX + 'gcc'
@@ -106,10 +115,48 @@ if PLATFORM == 'gcc':
     OBJCPY = PREFIX + 'objcopy'
     STRIP = PREFIX + 'strip'
 
+    # Dynamic detect the compiler information
+    info = get_compiler_info(PLATFORM, EXEC_PATH, CC)
+    is_nds32_toolchain = info['nds32_toolchain']['is_nds32']
+    default_arch = info['default_arch']
+    default_abi = info['default_abi']
+    if is_nds32_toolchain:
+        toolchain_support_b_extension = True
+        toolchain_support_zbc_extensions = True
+        RV_ARCH = info['default_arch']
+        RV_ABI = info['default_abi']
+    else:
+        toolchain_support_b_extension = info['b_extension_support']['has_b_extension']
+        toolchain_support_zbc_extensions = 'zbc' in info['b_extension_support']['supported_b_extensions']
+        isa_spec = info['isa_spec_support']['isa_spec']
+
+        if isa_spec >= '20191213':
+            if RV_ARCH == 'rv32imac':
+                RV_ARCH += '_zicsr_zifencei'
+            elif RV_ARCH == 'rv32imafc':
+                RV_ARCH += '_zifencei'
+            elif RV_ARCH == 'rv32imafdc' or RV_ARCH == 'rv32gc':
+                pass
+            else:
+                exit(1)
+            if toolchain_support_b_extension and SOC_SUPPORT_B_EXTENSION:
+                if toolchain_support_zbc_extensions:
+                    RV_ARCH += '_zba_zbb_zbc_zbs'
+                else:
+                    RV_ARCH += '_zba_zbb_zbs'
+
+
     ARCH_ABI = ' -mcmodel=medlow '
     CFLAGS = ARCH_ABI  + ' -DUSE_NONVECTOR_MODE=1  -DCONFIG_USB_DCACHE_ENABLE=1 -DCONFIG_CHERRYUSB_CUSTOM_IRQ_HANDLER=1 ' + ' -ffunction-sections -fdata-sections -fno-common '
     AFLAGS = CFLAGS
-    LFLAGS  = ARCH_ABI + '  --specs=nano.specs --specs=nosys.specs  -u _printf_float -u _scanf_float -nostartfiles -Wl,-Map=rtthread.map,--gc-sections,-print-memory-usage '
+    if is_nds32_toolchain:
+        CFLAGS += '-Wno-incompatible-pointer-types '
+        if SOC_SUPPORT_B_EXTENSION:
+            CFLAGS += ' -mext-zbabcs'
+        CFLAGS += ' -mcpu=d25 '
+        LFLAGS = ' -nostartfiles -Wl,-Map=rtthread.map,--gc-sections,-print-memory-usage '
+    else:
+        LFLAGS  = ARCH_ABI + '  --specs=nano.specs --specs=nosys.specs  -u _printf_float -u _scanf_float -nostartfiles -Wl,-Map=rtthread.map,--gc-sections,-print-memory-usage '
 
     CPATH = ''
     LPATH = ''
@@ -135,6 +182,18 @@ if PLATFORM == 'gcc':
         LFLAGS += ' -O2'
         CFLAGS += ' -DFLASH_XIP=1'
         LINKER_FILE = 'board/linker_scripts/gcc/flash_rtt.ld'
+    elif BUILD == 'flash_hybrid_debug':
+        CFLAGS += ' -gdwarf-2'
+        AFLAGS += ' -gdwarf-2'
+        CFLAGS += ' -Og'
+        LFLAGS += ' -Og'
+        CFLAGS += ' -DFLASH_XIP=1'
+        LINKER_FILE = 'board/linker_scripts/gcc/flash_hybrid_rtt.ld'
+    elif BUILD == 'flash_hybrid_release':
+        CFLAGS += ' -DNDEBUG -O2'
+        LFLAGS += ' -O2'
+        CFLAGS += ' -DFLASH_XIP=1'
+        LINKER_FILE = 'board/linker_scripts/gcc/flash_hybrid_rtt.ld'
     else:
         CFLAGS += ' -O2'
         LFLAGS += ' -O2'
@@ -148,6 +207,8 @@ if PLATFORM == 'gcc':
     CXXFLAGS = CFLAGS +  ' -Woverloaded-virtual -fno-exceptions -fno-rtti '
     CFLAGS = CFLAGS + ' -std=gnu11'
 elif PLATFORM == 'zcc':
+    if SOC_SUPPORT_B_EXTENSION:
+        RV_ARCH += '_zba_zbb_zbc_zbs'
     PREFIX = ''
     CC = 'zcc'
     CXX = 'z++'
@@ -160,6 +221,9 @@ elif PLATFORM == 'zcc':
     OBJDUMP = 'llvm-objdump'
     OBJCPY = 'llvm-objcopy'
     STRIP = 'llvm-strip'
+
+    if SOC_SUPPORT_B_EXTENSION:
+        RV_ARCH += '_zba_zbb_zbc_zbs'
 
     ARCH_ABI = ' --target=riscv32-unknown-elf -march=' + RV_ARCH + ' -mabi=' + RV_ABI + ' '
     CFLAGS = ARCH_ABI  + ' -DUSE_NONVECTOR_MODE=1  -DCONFIG_USB_DCACHE_ENABLE=1 -DCONFIG_CHERRYUSB_CUSTOM_IRQ_HANDLER=1 ' + ' -mtune=andes-d25-series  -Wall -Wno-undef -Wno-unused-variable -Wno-format -Wno-ignored-attributes -fomit-frame-pointer -fno-builtin -ffunction-sections -fdata-sections  -Wno-implicit-function-declaration'
@@ -190,6 +254,18 @@ elif PLATFORM == 'zcc':
         LFLAGS += ' -Os'
         CFLAGS += ' -DFLASH_XIP=1'
         LINKER_FILE = 'board/linker_scripts/gcc/flash_rtt.ld'
+    elif BUILD == 'flash_hybrid_debug':
+        CFLAGS += ' -gdwarf-4'
+        AFLAGS += ' -gdwarf-4'
+        CFLAGS += ' -Og'
+        LFLAGS += ' -Og'
+        CFLAGS += ' -DFLASH_XIP=1'
+        LINKER_FILE = 'board/linker_scripts/gcc/flash_hybrid_rtt.ld'
+    elif BUILD == 'flash_hybrid_release':
+        CFLAGS += ' -DNDEBUG -Os'
+        LFLAGS += ' -Os'
+        CFLAGS += ' -DFLASH_XIP=1'
+        LINKER_FILE = 'board/linker_scripts/gcc/flash_hybrid_rtt.ld'
     else:
         CFLAGS += ' -Os'
         LFLAGS += ' -Os'
@@ -245,6 +321,18 @@ elif PLATFORM == 'segger':
         CFLAGS += ' -Os'
         LFLAGS += ' -Os'
         LINKER_FILE = 'board/linker_scripts/segger/flash_rtt.icf'
+    elif BUILD == 'flash_hybrid_debug':
+        CFLAGS += ' -gdwarf-4'
+        AFLAGS += ' -gdwarf-4'
+        CFLAGS += ' -Og'
+        LFLAGS += ' -Og'
+        CFLAGS += ' -DFLASH_XIP=1'
+        LINKER_FILE = 'board/linker_scripts/segger/flash_hybrid_rtt.icf'
+    elif BUILD == 'flash_hybrid_release':
+        CFLAGS += ' -Os'
+        LFLAGS += ' -Os'
+        CFLAGS += ' -DFLASH_XIP=1'
+        LINKER_FILE = 'board/linker_scripts/segger/flash_hybrid_rtt.icf'
     else:
         CFLAGS += ' -Os'
         LFLAGS += ' -Os'

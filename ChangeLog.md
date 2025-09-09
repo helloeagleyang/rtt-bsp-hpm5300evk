@@ -1,5 +1,11 @@
 # Change Log
 
+## v1.10.1
+
+- Updated:
+  - Reduced competitive codes in drivers
+  - Supported gcc toolchains from Andes and xpacks, supported B extension
+
 ## v1.10.0
 
 - Integrated hpm_sdk v1.10.0

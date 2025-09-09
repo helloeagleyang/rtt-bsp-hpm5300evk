@@ -14,6 +14,20 @@
     gcc_omit_frame_pointer="Yes"
     link_linker_script_file="$(ProjectDir)/board/linker_scripts/segger/flash_rtt.icf"
     gcc_optimization_level="Level 2 balanced" />
+  <configuration
+    Name="flash_hybrid_debug"
+    c_preprocessor_definitions="DEBUG;FLASH_XIP=1;HPM_SES_USE_SEGGER_LD=1"
+    gcc_debugging_level="Level 3"
+    gcc_omit_frame_pointer="Yes"
+    link_linker_script_file="$(ProjectDir)/board/linker_scripts/segger/flash_hybrid_rtt.icf"
+    gcc_optimization_level="Debug" />
+  <configuration
+    Name="flash_hybrid_release"
+    c_preprocessor_definitions="NDEBUG;FLASH_XIP=1;HPM_SES_USE_SEGGER_LD=1"
+    gcc_debugging_level="Level 2"
+    gcc_omit_frame_pointer="Yes"
+    link_linker_script_file="$(ProjectDir)/board/linker_scripts/segger/flash_hybrid_rtt.icf"
+    gcc_optimization_level="Level 2 balanced" />
   <project Name="usb_host_msc_udisk">
     <configuration
       LIBRARY_IO_TYPE="RTT"
@@ -48,7 +62,11 @@
       gdb_server_reset_command="reset halt"
       gdb_server_type="Custom"
       gdb_server_command_line="openocd -f $(ProjectDir)/board/debug_scripts/openocd/probes/ft2232.cfg -f $(ProjectDir)/board/debug_scripts/openocd/soc/hpm5300.cfg -f $(ProjectDir)/board/debug_scripts/openocd/boards/hpm5300evk.cfg"
-
+      rv_arch_ext="_xv5"
+      rv_arch_zba="Yes"
+      rv_arch_zbb="Yes"
+      rv_arch_zbc="Yes"
+      rv_arch_zbs="Yes"
       project_directory=""
       project_type="Executable"
       rv_abi="ilp32"

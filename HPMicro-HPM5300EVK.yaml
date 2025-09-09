@@ -50,7 +50,7 @@ features_zh:
 
 pkg_type: Board_Support_Packages
 pkg_vendor: HPMicro
-pkg_version: 1.10.0
+pkg_version: 1.10.1
 
 template_projects:
 - project_name: blink_led
@@ -66,7 +66,6 @@ template_projects:
     - .project
     - .settings
     - applications
-    - bsp_utils.py
     - Kconfig
     - README.md
     - rtconfig.h
@@ -81,6 +80,7 @@ template_projects:
     - libraries
     - rt-thread
     - startup
+    - hpm_toolchain_helper.py
   - source_path_offset: ''
     target_path_offset: ''
     files_and_folders:
@@ -122,7 +122,6 @@ example_projects:
     - .project
     - .settings
     - applications
-    - bsp_utils.py
     - Kconfig
     - packages
     - README.md
@@ -138,6 +137,7 @@ example_projects:
     - libraries
     - rt-thread
     - startup
+    - hpm_toolchain_helper.py
   - source_path_offset: ''
     target_path_offset: ''
     files_and_folders:
@@ -177,7 +177,6 @@ example_projects:
     - .project
     - .settings
     - applications
-    - bsp_utils.py
     - Kconfig
     - README.md
     - rtconfig.h
@@ -192,6 +191,7 @@ example_projects:
     - libraries
     - rt-thread
     - startup
+    - hpm_toolchain_helper.py
   - source_path_offset: ''
     target_path_offset: ''
     files_and_folders:
@@ -231,7 +231,6 @@ example_projects:
     - .project
     - .settings
     - applications
-    - bsp_utils.py
     - Kconfig
     - packages
     - README.md
@@ -247,6 +246,7 @@ example_projects:
     - libraries
     - rt-thread
     - startup
+    - hpm_toolchain_helper.py
   - source_path_offset: ''
     target_path_offset: ''
     files_and_folders:
@@ -286,7 +286,6 @@ example_projects:
     - .project
     - .settings
     - applications
-    - bsp_utils.py
     - Kconfig
     - README.md
     - rtconfig.h
@@ -301,6 +300,7 @@ example_projects:
     - libraries
     - rt-thread
     - startup
+    - hpm_toolchain_helper.py
   - source_path_offset: ''
     target_path_offset: ''
     files_and_folders:
@@ -340,7 +340,6 @@ example_projects:
     - .project
     - .settings
     - applications
-    - bsp_utils.py
     - Kconfig
     - README.md
     - rtconfig.h
@@ -355,6 +354,7 @@ example_projects:
     - libraries
     - rt-thread
     - startup
+    - hpm_toolchain_helper.py
   - source_path_offset: ''
     target_path_offset: ''
     files_and_folders:
@@ -394,7 +394,6 @@ example_projects:
     - .project
     - .settings
     - applications
-    - bsp_utils.py
     - Kconfig
     - README.md
     - rtconfig.h
@@ -409,6 +408,7 @@ example_projects:
     - libraries
     - rt-thread
     - startup
+    - hpm_toolchain_helper.py
   - source_path_offset: ''
     target_path_offset: ''
     files_and_folders:
@@ -448,7 +448,6 @@ example_projects:
     - .project
     - .settings
     - applications
-    - bsp_utils.py
     - Kconfig
     - README.md
     - rtconfig.h
@@ -463,6 +462,7 @@ example_projects:
     - libraries
     - rt-thread
     - startup
+    - hpm_toolchain_helper.py
   - source_path_offset: ''
     target_path_offset: ''
     files_and_folders:
@@ -502,7 +502,6 @@ example_projects:
     - .project
     - .settings
     - applications
-    - bsp_utils.py
     - Kconfig
     - makefile.targets
     - packages
@@ -519,6 +518,7 @@ example_projects:
     - libraries
     - rt-thread
     - startup
+    - hpm_toolchain_helper.py
   - source_path_offset: ''
     target_path_offset: ''
     files_and_folders:
@@ -558,7 +558,6 @@ example_projects:
     - .project
     - .settings
     - applications
-    - bsp_utils.py
     - Kconfig
     - makefile.targets
     - packages
@@ -575,6 +574,7 @@ example_projects:
     - libraries
     - rt-thread
     - startup
+    - hpm_toolchain_helper.py
   - source_path_offset: ''
     target_path_offset: ''
     files_and_folders:
